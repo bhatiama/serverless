@@ -34,7 +34,7 @@ jobs:
             --function-name ${{secrets.LAMBDA_FUNCTION_NAME}} \
             --name ${{secrets.ALIAS_NAME}} \
             > output.json
-            CURRENT='\'$(cat output.json | jq -r '.FunctionVersion')
+            CURRENT=$(cat output.json | jq -r '.FunctionVersion')
             echo "$CURRENT"
             echo "CURRENT_VERSION=$CURRENT" >> $GITHUB_ENV
       - name: Update Lambda function code
