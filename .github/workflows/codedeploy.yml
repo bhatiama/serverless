@@ -19,16 +19,7 @@ jobs:
       - run: npm run build --if-present
       - name: Build Deployment Artifact
         run: |
-          mkdir codedeploy_artifact
           zip -r lambda_function .
-          pwd
-          ls -al
-          mv lambda_function.zip codedeploy_artifact
-          ls -al
-          pwd
-          cd codedeploy_artifact
-          pwd
-          ls -al
           pwd
           ls -al
       - name: Configure AWS credentials
@@ -49,7 +40,7 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name ${{secrets.LAMBDA_FUNCTION_NAME}} \
-            --zip-file fileb://./codedeploy_artifact/lambda_function.zip \
+            --zip-file fileb://lambda_function.zip \
             --publish \
             > output.json
             TARGET=$(cat output.json | jq -r '.Version')
