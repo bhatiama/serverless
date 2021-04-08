@@ -1,0 +1,87 @@
+name: Lambda Code Deploy
+on:
+  pull_request:
+    types: [closed]
+jobs:
+  build:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm install
+      - run: npm run build --if-present
+      - name: Build Deployment Artifact
+        run: |
+          mkdir codedeploy_artifact
+          zip -r lambda_function .
+          pwd
+          ls -al
+          mv lambda_function.zip codedeploy_artifact
+          ls -al
+          pwd
+          cd codedeploy_artifact
+          pwd
+          ls -al
+          pwd
+          ls -al
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{secrets.AWS_REGION}}
+      - name: Lamda Alias node-version
+        run: |
+          aws lambda get-alias \
+            --function-name ${{secrets.LAMBDA_FUNCTION_NAME}} \
+            --name ${{secrets.ALIAS_NAME}} \
+            > output.json
+            CURRENT_VERSION=$(cat output.json | jq -r '.FunctionVersion')
+      - name: Update Lambda function code
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{secrets.LAMBDA_FUNCTION_NAME}} \
+            --zip-file ./codedeploy_artifact/lambda_function.zip \
+            --publish \
+            > output.json
+            TARGET_VERSION = $(cat output.json | jq -r '.Version')
+      - name: Create APPSPEC file in S3 Bucket
+        run: |
+          cat > ${{secrets.APPSPEC_FILE}} <<- EOM
+          version: 0.0
+          Resouces:
+            - myLambdaFunction:
+              Type: AWS::Lambda::Function
+              Properties:
+                Name: ${{secrets.LAMBDA_FUNCTION_NAME}}
+                Alias: ${{secrets.ALIAS_NAME}}
+                CurrentVersion: $CURRENT_VERSION
+                TargetVersion : $TARGET_VERSION
+          EOM
+          aws s3 cp \
+            ${{secrets.APPSPEC_FILE}} \
+            s3://${{secrets.CODEDEPLOY_BUCKET}}/${{secrets.APPSPEC_FILE}}
+      - name: Create Deployment
+        run: |
+          REVISION=revesionType=S3, s3Location={bucket=${{secrets.CODEDEPLOY_BUCKET}}, key=${{secrets.APPSPEC_FILE}},bundleType=YAML}
+          output=$(aws deploy create-deployment \
+            --application-name csye6225-lambda \
+            --deployment-config-name CodeDeployDefault.LambdaAllAtOnce \
+            --deployment-group-name csye6225-lambda-deployment \
+            --description "CSYE6255 - Lambda CodeDeploy" \
+            --revision $REVISION
+            --region ${{secrets.AWS_REGION}} \
+            --output json)
+            echo $output
+            dId=$(echo $output | jq -r '.deploymentId')
+            aws deploy wait deployment-successful --deployment-id $dId
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_CODEDEPLOY_BUCKET: ${{secrets.CODEDEPLOY_BUCKET}}
