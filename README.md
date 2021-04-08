@@ -1,3 +1,5 @@
-# serverless
+# Lambda Application
+Lambda function to send email notification to the user
 
-Updated Readme
+## Technology
+NodeJS 12.x
