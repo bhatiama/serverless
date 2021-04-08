@@ -48,7 +48,7 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name ${{secrets.LAMBDA_FUNCTION_NAME}} \
-            --zip-file ./codedeploy_artifact/lambda_function.zip \
+            --zip-file fileb://./codedeploy_artifact/lambda_function.zip \
             --publish \
             > output.json
             TARGET_VERSION = $(cat output.json | jq -r '.Version')
