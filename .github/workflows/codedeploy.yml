@@ -35,6 +35,12 @@ jobs:
             --name ${{secrets.ALIAS_NAME}} \
             > output.json
             CURRENT=$(cat output.json | jq -r '.FunctionVersion')
+            echo "$CURRENT"
+            LATEST="\$LATEST"
+            if ["$CURRENT" == $LATEST]
+            then
+              CURRENT=1
+            fi
             echo "CURRENT_VERSION=$CURRENT" >> $GITHUB_ENV
       - name: Update Lambda function code
         run: |
