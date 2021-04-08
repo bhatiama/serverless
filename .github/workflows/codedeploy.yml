@@ -70,7 +70,7 @@ jobs:
             s3://${{secrets.CODEDEPLOY_BUCKET}}/${{secrets.APPSPEC_FILE}}
       - name: Create Deployment
         run: |
-          REVISION=revesionType=S3,s3Location={bucket=${{secrets.CODEDEPLOY_BUCKET}},key=${{secrets.APPSPEC_FILE}},bundleType=YAML}
+          REVISION=revisionType=S3,s3Location={bucket=${{secrets.CODEDEPLOY_BUCKET}},key=${{secrets.APPSPEC_FILE}},bundleType=YAML}
           aws deploy create-deployment \
             --application-name csye6225-lambda \
             --deployment-config-name CodeDeployDefault.LambdaAllAtOnce \
