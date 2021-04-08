@@ -62,10 +62,10 @@ jobs:
             - myLambdaFunction:
               Type: AWS::Lambda::Function
               Properties:
-                Name: ${{secrets.LAMBDA_FUNCTION_NAME}}
-                Alias: ${{secrets.ALIAS_NAME}}
-                CurrentVersion: ${{env.CURRENT_VERSION}}
-                TargetVersion : ${{env.TARGET_VERSION}}
+                Name: "${{secrets.LAMBDA_FUNCTION_NAME}}"
+                Alias: "${{secrets.ALIAS_NAME}}"
+                CurrentVersion: "${{env.CURRENT_VERSION}}"
+                TargetVersion : "${{env.TARGET_VERSION}}"
           EOM
           aws s3 cp \
             ${{secrets.APPSPEC_FILE}} \
