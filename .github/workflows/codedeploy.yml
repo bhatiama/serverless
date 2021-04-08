@@ -78,7 +78,7 @@ jobs:
             --description "CSYE6255 - Lambda CodeDeploy" \
             --revision $REVISION
             > output.json
-            dId=$(cat output.json | jq -r '.deploymentId')
+            dId=$(cat output.json | jq '.deploymentId')
             aws deploy wait deployment-successful --deployment-id $dId
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
