@@ -70,16 +70,15 @@ jobs:
             s3://${{secrets.CODEDEPLOY_BUCKET}}/${{secrets.APPSPEC_FILE}}
       - name: Create Deployment
         run: |
-          REVISION=revesionType=S3,s3Location={bucket=${{secrets.CODEDEPLOY_BUCKET}}, key=${{secrets.APPSPEC_FILE}},bundleType=YAML}
-          output=$(aws deploy create-deployment \
+          REVISION=revesionType=S3,s3Location={bucket=${{secrets.CODEDEPLOY_BUCKET}},key=${{secrets.APPSPEC_FILE}},bundleType=YAML}
+          aws deploy create-deployment \
             --application-name csye6225-lambda \
             --deployment-config-name CodeDeployDefault.LambdaAllAtOnce \
             --deployment-group-name csye6225-lambda-deployment \
             --description "CSYE6255 - Lambda CodeDeploy" \
             --revision $REVISION
-            --output json)
-            echo $output
-            dId=$(echo $output | jq -r '.deploymentId')
+            > output.json
+            dId=$(cat output.json | jq -r '.deploymentId')
             aws deploy wait deployment-successful --deployment-id $dId
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
