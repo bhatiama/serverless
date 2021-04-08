@@ -43,8 +43,9 @@ jobs:
             --function-name ${{secrets.LAMBDA_FUNCTION_NAME}} \
             --name ${{secrets.ALIAS_NAME}} \
             > output.json
-        env:
-          CURRENT_VERSION: $(cat output.json | jq -r '.FunctionVersion')
+            export CURRENT=$(cat output.json | jq -r '.FunctionVersion')
+            echo $CURRENT
+            echo "::set-env name=CURRENT_VERSION::$CURRENT"
       - name: Update Lambda function code
         run: |
           aws lambda update-function-code \
@@ -52,8 +53,9 @@ jobs:
             --zip-file fileb://./codedeploy_artifact/lambda_function.zip \
             --publish \
             > output.json
-        env:
-          TARGET_VERSION: $(cat output.json | jq -r '.Version')
+            export TARGET=$(cat output.json | jq -r '.Version')
+            echo $TARGET
+            echo "::set-env name=TARGET_VERSION::$TARGET"
       - name: Create APPSPEC file in S3 Bucket
         run: |
           cat > ${{secrets.APPSPEC_FILE}} <<- EOM
@@ -64,8 +66,8 @@ jobs:
               Properties:
                 Name: ${{secrets.LAMBDA_FUNCTION_NAME}}
                 Alias: ${{secrets.ALIAS_NAME}}
-                CurrentVersion: ${{env.CURRENT_VERSION}}
-                TargetVersion : ${{env.TARGET_VERSION}}
+                CurrentVersion: $CURRENT_VERSION
+                TargetVersion : $TARGET_VERSION
           EOM
           aws s3 cp \
             ${{secrets.APPSPEC_FILE}} \
