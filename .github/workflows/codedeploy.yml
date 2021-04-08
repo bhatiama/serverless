@@ -51,7 +51,7 @@ jobs:
             --zip-file fileb://./codedeploy_artifact/lambda_function.zip \
             --publish \
             > output.json
-            TARGET_VERSION = $(cat output.json | jq -r '.Version')
+            TARGET_VERSION=$(cat output.json | jq -r '.Version')
       - name: Create APPSPEC file in S3 Bucket
         run: |
           cat > ${{secrets.APPSPEC_FILE}} <<- EOM
