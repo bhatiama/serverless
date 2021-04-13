@@ -26,7 +26,7 @@ exports.handler = (event, context, callback) => {
     .then((data) => {
       let email_subject = "";
       let email_data = "";
-      let book_url = "http://" + message.api_url + "/books/" + message.book_id;
+      let book_url = "https://" + message.api_url + "/books/" + message.book_id;
       if (data.Count == 0) {
         console.log("Sending Email Notification");
         if (message.email_check_flag == "Book_Created") {
